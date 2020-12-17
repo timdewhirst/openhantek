@@ -196,12 +196,24 @@ double stringToValue(const QString &text, Unit unit, bool *ok) {
     }
 }
 
-QString hexDump(unsigned char *data, unsigned int length) {
-    QString dumpString, byteString;
+QString hexDump(unsigned char *data, unsigned int length)
+{
+    // map raw data to format " hl hl hl hl ..."
+    // where h == high nibble, l == low nibble
+    QByteArray result( 3*length, ' ' );
 
-    for (unsigned int index = 0; index < length; ++index) dumpString.append(byteString.sprintf(" %02x", data[index]));
+    static const char hex_table[] = "0123456789abcdef";
+    static auto hn = [](char c){ return hex_table[c >> 4]; };
+    static auto ln = [](char c){ return hex_table[c & 0x0f]; };
+    unsigned int i = 0;
+    for (unsigned int index = 0; index < length; ++index)
+    {
+        ++i;
+        result[i++] = hn(data[index]);
+        result[i++] = ln(data[index]);
+    }
 
-    return dumpString;
+    return result;
 }
 
 unsigned int hexParse(const QString dump, unsigned char *data, unsigned int length) {
